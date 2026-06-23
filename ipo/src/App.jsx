@@ -21,6 +21,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/clientes" element={<ClientesList />} />
+          {/* Rotas do formulário de Clientes */}
+          <Route path="/clientes/create" element={<ClienteForm modo="create" />} />
+          <Route path="/clientes/update/:id" element={<ClienteForm modo="update" />} />
+          <Route path="/clientes/read/:id" element={<ClienteForm modo="read" />} />
           <Route path="/veiculos" element={<VeiculosList />} />
           <Route path="/inspecoes" element={<InspecoesList />} />
         </Routes>
@@ -41,6 +45,71 @@ function Inicio() {
     </div>
   );
 
+}
+
+function ClienteForm() {
+
+  const [mensagemErro, setMensagemErro] = useState(null);
+
+  const [formData, setFormData] = useState({
+    nome: '',
+    morada: '',
+    nif: ''
+  });
+
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const method = 'POST';
+      const url = `${API_BASE}/clientes`;
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (data.success) {
+        navigate('/clientes');
+      } else {
+        setMensagemErro(data.message);
+      }
+    } catch {
+      setMensagemErro('Erro ao guardar o cliente');
+    }
+  };
+
+  const navigate = useNavigate();
+
+
+  return (
+    <>
+      <h2>Novo Cliente</h2>
+      <form onSubmit={handleSubmit}>
+
+        <div className="row">
+          <div className="form-group col-8">
+            <label>Nome:</label>
+            <input className="form-control" value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })}/>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="form-group col-6">
+            <label>Morada</label>
+            <input className="form-control" value={formData.morada} onChange={(e) => setFormData({ ...formData, morada: e.target.value })}/>
+          </div>
+
+          <div className="form-group col-6">
+            <label>NIF</label>
+            <input className="form-control" value={formData.nif} onChange={(e) => setFormData({ ...formData, nif: e.target.value })}/>
+          </div> 
+        </div>
+
+        <button type="submit" className="btn btn-dark mr-2">Guardar</button>
+        <button type="button" className="btn btn-dark mr-2" onClick={() => navigate('/clientes')}>Cancelar</button>
+      </form>
+    </>
+  );
 }
 
 function ClientesList() {
@@ -107,7 +176,9 @@ function ClientesList() {
           <h2>Clientes</h2>
         </div>
         <div className="col-6 text-right">
-          <button className="btn btn-dark ml-3" ><i className="fa fa-plus-square" aria-hidden="true"></i> Novo Cliente</button>
+          <Link to="/clientes/create" className="btn btn-dark">
+            <i className="fa fa-plus-square"></i> Novo Cliente
+          </Link>
           <button className="btn btn-light ml-3" onClick={fetchData}><i className="fa fa-refresh" aria-hidden="true"></i> Atualizar</button>
         </div>
       </div>
@@ -178,7 +249,7 @@ function ClientesList() {
 function VeiculosList() {
   const [deleteId, setDeleteId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [inspecoes, setInspecoes] = useState([]);
+  const [veiculos, setVeiculos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensagemErro, setMensagemErro] = useState(null);
   const navigate = useNavigate();
@@ -199,7 +270,7 @@ function VeiculosList() {
 
   const confirmDelete = async (id) => {
     try {
-      const response = await fetch(API_BASE + '/inspecoes/' + id, { method: 'DELETE' });
+      const response = await fetch(API_BASE + '/veiculos/' + id, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
         fetchData();
@@ -207,7 +278,7 @@ function VeiculosList() {
         setMensagemErro(data.message);
       }
     } catch {
-      setMensagemErro('Erro ao eliminar inspeção');
+      setMensagemErro('Erro ao eliminar veiculo');
     } finally {
       closeDeleteModal();
     }
@@ -215,15 +286,15 @@ function VeiculosList() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(API_BASE + '/inspecoes');
+      const response = await fetch(API_BASE + '/veiculos');
       const data = await response.json();
       if (data.success) {
-        setInspecoes(data.data);
+        setVeiculos(data.data);
       } else {
         setMensagemErro(data.message);
       }
     } catch {
-      setMensagemErro('Erro ao carregar Inspecoes');
+      setMensagemErro('Erro ao carregar Veiculos');
     } finally {
       setLoading(false);
     }
@@ -233,10 +304,10 @@ function VeiculosList() {
     <>
       <div className="row">
         <div className="col-6">
-          <h2>Inspecoes</h2>
+          <h2>Veiculos</h2>
         </div>
         <div className="col-6 text-right">
-          <button className="btn btn-dark ml-3" ><i className="fa fa-plus-square" aria-hidden="true"></i> Nova Inspecção</button>
+          <button className="btn btn-dark ml-3" ><i className="fa fa-plus-square" aria-hidden="true"></i> Novo Veiculo</button>
           <button className="btn btn-light ml-3" onClick={fetchData}><i className="fa fa-refresh" aria-hidden="true"></i> Atualizar</button>
         </div>
       </div>
@@ -252,9 +323,9 @@ function VeiculosList() {
         <thead>
           <tr>
             <th>Código</th>
-            <th>Codigo Cliente</th>
-            <th>Matricula</th>
-            <th>Inspetor</th>
+            <th>Matrícula</th>
+            <th>Data Livrete</th>
+            <th>Ano farbrico</th>
             <th>Nome do cliente</th>
             <th>Marca</th>
             <th>Opções</th>
@@ -310,7 +381,7 @@ function VeiculosList() {
 }
 
 function InspecoesList() {
- const [deleteId, setDeleteId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [inspecoes, setInspecoes] = useState([]);
   const [loading, setLoading] = useState(true);
