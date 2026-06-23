@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Routes, Route, Link } from 'react-router-dom';
 
-const API_BASE = 'https://effective-capybara-v665669654wghp5gj-3000.app.github.dev'
+const API_BASE = 'https://turbo-zebra-wrr4rrpr4wjrhg749-3000.app.github.dev'
 
 function App() {
   return (
@@ -160,7 +160,7 @@ function ClientesList() {
                   </button>
                 </div>
                 <div className="modal-body">
-                  <p>Tem certeza que deseja eliminar este cliente?</p>
+                  <p>Tem certeza que deseja eliminar esta inspeção?</p>
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={closeDeleteModal}>Cancelar</button>
@@ -176,17 +176,16 @@ function ClientesList() {
 }
 
 function VeiculosList() {
-
   const [deleteId, setDeleteId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [veiculos, setVeiculos] = useState([]);
+  const [inspecoes, setInspecoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensagemErro, setMensagemErro] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
+
     fetchData();
   }, []);
-
 
   const openDeleteModal = (id) => {
     setDeleteId(id);
@@ -200,7 +199,7 @@ function VeiculosList() {
 
   const confirmDelete = async (id) => {
     try {
-      const response = await fetch(API_BASE + '/veiculos/' + id, { method: 'DELETE' });
+      const response = await fetch(API_BASE + '/inspecoes/' + id, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
         fetchData();
@@ -208,38 +207,36 @@ function VeiculosList() {
         setMensagemErro(data.message);
       }
     } catch {
-      setMensagemErro('Erro ao eliminar veículo');
-    }
-    finally {
+      setMensagemErro('Erro ao eliminar inspeção');
+    } finally {
       closeDeleteModal();
     }
   };
 
   const fetchData = async () => {
     try {
-      const response = await fetch(API_BASE + '/veiculos');
+      const response = await fetch(API_BASE + '/inspecoes');
       const data = await response.json();
       if (data.success) {
-        setVeiculos(data.data);
+        setInspecoes(data.data);
       } else {
         setMensagemErro(data.message);
       }
     } catch {
-      setMensagemErro('Erro ao carregar veículos');
+      setMensagemErro('Erro ao carregar Inspecoes');
     } finally {
       setLoading(false);
     }
   };
-
   if (loading) return <p>Carregando...</p>;
   return (
     <>
       <div className="row">
         <div className="col-6">
-          <h2>Veículos</h2>
+          <h2>Inspecoes</h2>
         </div>
         <div className="col-6 text-right">
-          <button className="btn btn-dark ml-3" ><i className="fa fa-plus-square" aria-hidden="true"></i> Novo Veículo</button>
+          <button className="btn btn-dark ml-3" ><i className="fa fa-plus-square" aria-hidden="true"></i> Nova Inspecção</button>
           <button className="btn btn-light ml-3" onClick={fetchData}><i className="fa fa-refresh" aria-hidden="true"></i> Atualizar</button>
         </div>
       </div>
@@ -254,27 +251,28 @@ function VeiculosList() {
       <table className="table table-striped">
         <thead>
           <tr>
-            <th>Codigo</th>
+            <th>Código</th>
+            <th>Codigo Cliente</th>
             <th>Matricula</th>
-            <th>Data Livrete</th>
-            <th>Ano Fabrico</th>
-            <th>Nome do clinete</th>
+            <th>Inspetor</th>
+            <th>Nome do cliente</th>
             <th>Marca</th>
             <th>Opções</th>
           </tr>
         </thead>
         <tbody>
-          {veiculos.map(veiculo => (
-            <tr key={veiculo.codveiculo}>
-              <td>{veiculo.codmatricula}</td>
-              <td>{veiculo.datalivrete}</td>
-              <td>{veiculo.anofabrico}</td>
-              <td>{veiculo.codcli}</td>
-              <td>{veiculo.marca}</td>
+          {veiculos.map(veiculos => (
+            <tr key={veiculos.codveiculo}>
+              <td>{veiculos.codveiculo}</td>
+              <td>{veiculos.codmatricula}</td>
+              <td>{veiculos.datalivrete}</td>
+              <td>{veiculos.anofabrico}</td>
+              <td>{veiculos.cliente.nome}</td>
+              <td>{veiculos.marca.marca}</td>
               <td style={{ whiteSpace: 'nowrap' }}>
                 <button className="btn btn-dark btn-sm mr-2" ><i className='fa fa-eye' aria-hidden='true'></i></button>
                 <button className="btn btn-dark btn-sm mr-2" ><i className='fa fa-pencil' aria-hidden='true'></i></button>
-                <button className="btn btn-dark btn-sm" onClick={() => openDeleteModal(veiculo.codveiculo)}>
+                <button className="btn btn-dark btn-sm" onClick={() => openDeleteModal(veiculos.codveiculo)}>
                   <i className='fa fa-trash' aria-hidden='true'></i>
                 </button>
               </td>
@@ -289,7 +287,6 @@ function VeiculosList() {
             <div className="modal-dialog" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <div className="modal-header"></div>
                   <h5 className="modal-title">Confirmação</h5>
                   <button type="button" className="close" onClick={closeDeleteModal}>
                     <span>&times;</span>
@@ -307,15 +304,144 @@ function VeiculosList() {
           </div>
         </>
       )}
-    </>
-  );
 
-  return (<h2>Página de Veículos</h2>
+    </>
   );
 }
 
 function InspecoesList() {
-  return (<h2>Página de Inspeções</h2>);
+ const [deleteId, setDeleteId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [inspecoes, setInspecoes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [mensagemErro, setMensagemErro] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const openDeleteModal = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteId(null);
+    setShowDeleteModal(false);
+  };
+
+  const confirmDelete = async (id) => {
+    try {
+      const response = await fetch(API_BASE + '/inspecoes/' + id, { method: 'DELETE' });
+      const data = await response.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        setMensagemErro(data.message);
+      }
+    } catch {
+      setMensagemErro('Erro ao eliminar inspeção');
+    }
+    finally {
+      closeDeleteModal();
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(API_BASE + '/inspecoes');
+      const data = await response.json();
+      if (data.success) {
+        setInspecoes(data.data);
+      } else {
+        setMensagemErro(data.message);
+      }
+    } catch {
+      setMensagemErro('Erro ao carregar inspeções');
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (loading) return <p>Carregando...</p>;
+  return (
+    <>
+      <div className="row">
+        <div className="col-6">
+          <h2>Página de Inspeções</h2>
+        </div>
+        <div className="col-6 text-right">
+          <button className="btn btn-dark ml-3" ><i className="fa fa-plus-square" aria-hidden="true"></i> Nova Inspeção</button>
+          <button className="btn btn-light ml-3" onClick={fetchData}><i className="fa fa-refresh" aria-hidden="true"></i> Atualizar</button>
+        </div>
+      </div>
+      {mensagemErro && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          {mensagemErro}
+          <button type="button" className="close" onClick={() => setMensagemErro('')} aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      )}
+      <table className="table table-striped">
+        <thead>
+          <tr>
+            <th>Codigo Inspeção</th>
+            <th>Código Cliente</th>
+            <th>Código Matrícula</th>
+            <th>Código Inspetor</th>
+            <th>Data Inspeção</th>
+            <th>Número Faltas</th>
+            <th>Descrição Faltas</th>
+            <th>Aprovado</th>
+            <th>Opções</th>
+          </tr>
+        </thead>
+        <tbody>
+          {inspecoes.map(inspecao => (
+            <tr key={inspecao.codinspecao}>
+              <td>{inspecao.codinspecao}</td>
+              <td>{inspecao.codcli}</td>
+              <td>{inspecao.codmatricula}</td>
+              <td>{inspecao.codinspetor}</td>
+              <td>{inspecao.datainspecao}</td>
+              <td>{inspecao.numerofaltas}</td>
+              <td>{inspecao.descricaofaltas}</td>
+              <td>{inspecao.aprovado}</td>
+              <td style={{ whiteSpace: 'nowrap' }}>
+                <button className="btn btn-dark btn-sm mr-2" ><i className='fa fa-eye' aria-hidden='true'></i></button>
+                <button className="btn btn-dark btn-sm mr-2" ><i className='fa fa-pencil' aria-hidden='true'></i></button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {showDeleteModal && (
+        <>
+          <div className="modal-backdrop fade show"></div>
+          <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1" role="dialog">
+            <div className="modal-dialog" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Confirmação</h5>
+                  <button type="button" className="close" onClick={closeDeleteModal}>
+                    <span>&times;</span>
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <p>Tem certeza que deseja eliminar este veículo?</p>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={closeDeleteModal}>Cancelar</button>
+                  <button type="button" className="btn btn-danger" onClick={() => confirmDelete(deleteId)}>Confirmar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
 }
 
 export default App
